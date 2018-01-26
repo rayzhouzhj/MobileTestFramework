@@ -89,7 +89,7 @@ public class DeviceAllocationManager
 		}
 	}
 	
-	public void setValidDevices(List<String> deviceID) 
+	public void setSpecifiedDevices(List<String> deviceID) 
 	{
 		if(RunTimeContext.isAndroidPlatform())
 		{

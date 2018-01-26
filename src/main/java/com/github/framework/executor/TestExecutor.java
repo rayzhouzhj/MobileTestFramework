@@ -78,12 +78,12 @@ public class TestExecutor
 
 	/**
 	 * TestExecutor for specific test devices, only specified devices will be assigned for execution
-	 * @param validDeviceIds
+	 * @param deviceIds
 	 * @throws IOException
 	 */
-	private TestExecutor(List<String> validDeviceIds)
+	private TestExecutor(List<String> deviceList)
 	{
-		DeviceAllocationManager.getInstance().setValidDevices(validDeviceIds);
+		DeviceAllocationManager.getInstance().setSpecifiedDevices(deviceList);
 		DeviceAllocationManager.getInstance().initializeDevices();
 	}
 
