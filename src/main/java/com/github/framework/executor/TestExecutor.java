@@ -135,11 +135,11 @@ public class TestExecutor
 		if(deviceCount == 0)
 		{
 			FigletWriter.print("No Devices Connected");
-			throw new IllegalArgumentException("No connected " + System.getenv("Platform") + " devices.");
+			throw new IllegalArgumentException("No connected " + RunTimeContext.currentPlatform() + " devices.");
 		}
 
 		// Check execution permission for IOS
-		if(System.getenv("Platform").equalsIgnoreCase("ios"))
+		if(RunTimeContext.isIOSPlatform())
 		{
 			DeviceAllocationManager.getInstance().getIOSDeviceManager().checkExecutePermissionForIOSDebugProxyLauncher();
 		}

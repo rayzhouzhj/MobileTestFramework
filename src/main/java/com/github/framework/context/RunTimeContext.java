@@ -71,7 +71,7 @@ public class RunTimeContext
 	
 	public static MobilePlatform currentPlatform()
 	{
-		String platform = System.getenv("Platform");
+		String platform = RunTimeContext.getInstance().getProperty("PLATFORM", "");
 		
 		if(platform.equalsIgnoreCase("ANDROID"))
 		{

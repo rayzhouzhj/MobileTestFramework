@@ -41,8 +41,8 @@ public class ExtentManager
 			String command = "node " + RunTimeContext.getInstance().getProperty("APPIUM_JS_PATH") + " -v";
 			String appiumVersion = commandPrompt.runCommand(command).replace("\n", "");
 			String executionMode = RunTimeContext.getInstance().getProperty("RUNNER");
-			String platform = RunTimeContext.getInstance().getProperty("Platform");
-			String build = RunTimeContext.getInstance().getProperty("BuildNumber");
+			String platform = RunTimeContext.getInstance().getProperty("PLATFORM");
+			String build = RunTimeContext.getInstance().getProperty("BUILD_NUMBER");
 			if(build == null) build = "";
 			
 			extent.setSystemInfo("AppiumServer", appiumVersion);
@@ -93,10 +93,9 @@ public class ExtentManager
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
 
-		String product = RunTimeContext.getInstance().getProperty("Product");
-		String platform = RunTimeContext.getInstance().getProperty("Platform");
-		String testType = RunTimeContext.getInstance().getProperty("TestType");
-		String buildNum = RunTimeContext.getInstance().getProperty("BuildNumber");
+		String product = RunTimeContext.getInstance().getProperty("PRODUCT_NAME");
+		String platform = RunTimeContext.getInstance().getProperty("PLATFORM");
+		String buildNum = RunTimeContext.getInstance().getProperty("BUILD_NUMBER");
 		String projectName = (product == null)? platform + "_Test" : product + "_" + platform;
 		String reportName = (buildNum == null)? formatter.format(LocalDateTime.now()) : buildNum;
 		

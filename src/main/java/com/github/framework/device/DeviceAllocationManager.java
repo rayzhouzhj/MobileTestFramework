@@ -38,10 +38,11 @@ public class DeviceAllocationManager
 
 	public void initializeDevices() 
 	{
-		if (System.getenv("Platform") == null) 
+		if (RunTimeContext.currentPlatform() == MobilePlatform.UNDEFINED) 
 		{
-			throw new IllegalArgumentException("Please execute with Platform environment"
-					+ ":: Platform=android/ios mvn clean -Dtest=Runner test");
+			throw new IllegalArgumentException("Please update config 'PLATFORM' with android/ios "
+					+ "or execute with Platform environment,"
+					+ "=> Platform=android/ios mvn clean -Dtest=Runner test");
 		}
 
 		if (RunTimeContext.isIOSPlatform()) 
