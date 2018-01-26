@@ -16,8 +16,8 @@ import com.github.framework.utils.FigletWriter;
 public class TestExecutor 
 {
 	/**
-	 * Build ParallelExecutor base on environment variables
-	 * @return ParallelExecutor
+	 * Build TestExecutor base on environment variables
+	 * @return TestExecutor
 	 * @throws IOException
 	 */
 	public static TestExecutor build()
@@ -68,7 +68,7 @@ public class TestExecutor
 	}
 	
 	/**
-	 * ParallelExecutor for no specified test devices, all connected devices will be assigned for execution
+	 * TestExecutor for no specified test devices, all connected devices will be assigned for execution
 	 * @throws IOException
 	 */
 	private TestExecutor()
@@ -77,7 +77,7 @@ public class TestExecutor
 	}
 
 	/**
-	 * ParallelExecutor for specific test devices, only specified devices will be assigned for execution
+	 * TestExecutor for specific test devices, only specified devices will be assigned for execution
 	 * @param validDeviceIds
 	 * @throws IOException
 	 */
@@ -88,7 +88,7 @@ public class TestExecutor
 	}
 
 	/**
-	 * ParallelExecutor for specific test devices, only specified devices will be assigned for execution
+	 * TestExecutor for specific test devices, only specified devices will be assigned for execution
 	 * @param device
 	 * @throws IOException
 	 */
