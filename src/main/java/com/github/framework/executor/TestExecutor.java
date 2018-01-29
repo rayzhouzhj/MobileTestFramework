@@ -78,7 +78,7 @@ public class TestExecutor
 
 	/**
 	 * TestExecutor for specific test devices, only specified devices will be assigned for execution
-	 * @param deviceIds
+	 * @param deviceList
 	 * @throws IOException
 	 */
 	private TestExecutor(List<String> deviceList)
@@ -117,7 +117,6 @@ public class TestExecutor
 	 */
 	public boolean runTests(String packages) throws Exception 
 	{
-		FigletWriter.print(RunTimeContext.getInstance().getProperty("RUNNER"));
 		return runTests(packages, new ArrayList<String>());
 	}
 
