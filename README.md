@@ -2,7 +2,7 @@
 Mobile test framework with Selenium + Appium + ExtentReport + TestNG
 
 ## What the framework can do
-It can help you:
+#### It can help you:
 * Run scripts in different mode Parallel/Distribute
 * Run scripts in different devices
   - Android emulator
