@@ -32,11 +32,11 @@ public class DesiredCapabilityBuilder
 	{
 		switch(capability)
 		{
-			case ANDROID_NATIVE: return this.androidNative();
-			case IOS_NATIVE: return this.iosNative();
-			case ANDROID_WEB: return this.androidWeb();
-			case IOS_WEB: return this.iOSWeb();
-			default: return null;
+		case ANDROID_NATIVE: return this.androidNative();
+		case IOS_NATIVE: return this.iosNative();
+		case ANDROID_WEB: return this.androidWeb();
+		case IOS_WEB: return this.iOSWeb();
+		default: return null;
 		}
 	}
 
@@ -49,10 +49,16 @@ public class DesiredCapabilityBuilder
 		androidCapabilities.setCapability(AndroidMobileCapabilityType.APP_ACTIVITY, RunTimeContext.getInstance().getProperty("APP_ACTIVITY"));
 		androidCapabilities.setCapability(AndroidMobileCapabilityType.APP_PACKAGE, RunTimeContext.getInstance().getProperty("APP_PACKAGE"));
 		androidCapabilities.setCapability(AndroidMobileCapabilityType.SYSTEM_PORT, AvailablePorts.get());
-		androidCapabilities.setCapability(MobileCapabilityType.AUTOMATION_NAME, AutomationName.ANDROID_UIAUTOMATOR2);
 		androidCapabilities.setCapability(MobileCapabilityType.UDID, TestingDevice.getDeviceUDID());
 		androidCapabilities.setCapability(AndroidMobileCapabilityType.AUTO_GRANT_PERMISSIONS, true);
 
+		// Use ANDROID_UIAUTOMATOR2 for OS system greater than 5.0
+		String version = TestingDevice.get().getOSVersion();
+		if (Integer.parseInt(version.split("\\.")[0]) >= 5) 
+		{
+			androidCapabilities.setCapability(MobileCapabilityType.AUTOMATION_NAME, AutomationName.ANDROID_UIAUTOMATOR2);
+		}
+		
 		// If new app installation is required
 		Boolean status = appInstallationStatus.get(TestingDevice.getDeviceUDID());
 		if(status == null || status == Boolean.FALSE)
@@ -66,7 +72,7 @@ public class DesiredCapabilityBuilder
 
 			// Set Mobile App to Capability
 			Path path = FileSystems.getDefault().getPath(appPath);
-			if (!path.getParent().isAbsolute()) 
+			if (!path.isAbsolute()) 
 			{
 				androidCapabilities.setCapability(MobileCapabilityType.APP, path.normalize().toAbsolutePath().toString());
 			} 
@@ -97,6 +103,13 @@ public class DesiredCapabilityBuilder
 		androidWebCapabilities.setCapability(MobileCapabilityType.TAKES_SCREENSHOT, true);
 		androidWebCapabilities.setCapability(MobileCapabilityType.UDID, TestingDevice.getDeviceUDID());
 
+		// Use ANDROID_UIAUTOMATOR2 for OS system greater than 5.0
+		String version = TestingDevice.get().getOSVersion();
+		if (Integer.parseInt(version.split("\\.")[0]) >= 5) 
+		{
+			androidWebCapabilities.setCapability(MobileCapabilityType.AUTOMATION_NAME, AutomationName.ANDROID_UIAUTOMATOR2);
+		}
+		
 		return androidWebCapabilities;
 	}
 
@@ -111,7 +124,7 @@ public class DesiredCapabilityBuilder
 
 		// Use IOS_XCUI_TEST for OS system greater than 10.0
 		String version = TestingDevice.get().getOSVersion();
-		if (Integer.parseInt(version.substring(0, 2)) >= 10) 
+		if (Integer.parseInt(version.split("\\.")[0]) >= 10)
 		{
 			iOSWebCapabilities.setCapability(MobileCapabilityType.AUTOMATION_NAME, AutomationName.IOS_XCUI_TEST);
 			try 
@@ -157,7 +170,7 @@ public class DesiredCapabilityBuilder
 
 				// Set App path
 				Path path = FileSystems.getDefault().getPath(appPath);
-				if (!path.getParent().isAbsolute())
+				if (!path.isAbsolute())
 				{
 					iOSCapabilities.setCapability(MobileCapabilityType.APP, path.normalize().toAbsolutePath().toString());
 				}
@@ -200,7 +213,7 @@ public class DesiredCapabilityBuilder
 
 		// Use IOS_XCUI_TEST for OS system greater than 10.0
 		String version = TestingDevice.get().getOSVersion();
-		if (Integer.parseInt(version.substring(0, 2)) >= 10) 
+		if (Integer.parseInt(version.split("\\.")[0]) >= 10) 
 		{
 			iOSCapabilities.setCapability(MobileCapabilityType.AUTOMATION_NAME, AutomationName.IOS_XCUI_TEST);
 			try 
