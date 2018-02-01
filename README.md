@@ -2,7 +2,7 @@
 Mobile test framework with Selenium + Appium + ExtentReport + TestNG
 
 ## What the framework can do
-It can help you:
+#### It can help you:
 * Run scripts in different mode Parallel/Distribute
 * Run scripts in different devices
   - Android emulator
@@ -35,3 +35,7 @@ PLATFORM=Android DEBUG_MODE=OFF mvn clean test -Dtest=Runner
 ```
 
 #### Turn on debug mode to select any available devices for debugging
+<img src="https://github.com/rayzhouzhj/MobileTestFramework/blob/master/screenshot-refs/choosedevice.png" width="350">
+
+
+## Check out a quick demo on how this framework works [MobiletestDemo](https://github.com/rayzhouzhj/MobileTestDemo)
