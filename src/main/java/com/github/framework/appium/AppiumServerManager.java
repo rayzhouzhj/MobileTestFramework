@@ -92,7 +92,7 @@ public class AppiumServerManager
 
 		int port = AvailablePorts.get();
 		File classPathRoot = new File(System.getProperty("user.dir"));
-		String tempFileDir = new File(String.valueOf(classPathRoot)).getAbsolutePath() + "/target/" + "tmp_" + port;
+		String tempFileDir = new File(String.valueOf(classPathRoot)).getAbsolutePath() + "/target/ios_temp/" + "tmp_" + port;
 
 		AppiumDriverLocalService service;
 		AppiumServiceBuilder builder = new AppiumServiceBuilder()
