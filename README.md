@@ -1,3 +1,5 @@
+[![](https://jitpack.io/v/rayzhouzhj/MobileTestFramework.svg)](https://jitpack.io/#rayzhouzhj/MobileTestFramework)
+
 # MobileTestFramework
 Mobile test framework with Selenium + Appium + ExtentReport + TestNG
 
