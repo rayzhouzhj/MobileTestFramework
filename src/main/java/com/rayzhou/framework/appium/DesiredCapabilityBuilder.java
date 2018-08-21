@@ -66,6 +66,11 @@ public class DesiredCapabilityBuilder
 
 			// Set Mobile App to Capability
 			Path path = FileSystems.getDefault().getPath(appPath);
+			if(!path.toFile().exists())
+			{
+				throw new IllegalArgumentException("File path [ANDROID_APP_PATH] is invalid => " + appPath);
+			}
+			
 			if (!path.isAbsolute()) 
 			{
 				androidCapabilities.setCapability(MobileCapabilityType.APP, path.normalize().toAbsolutePath().toString());
@@ -154,6 +159,11 @@ public class DesiredCapabilityBuilder
 
 			// Set App path
 			Path path = FileSystems.getDefault().getPath(appPath);
+			if(!path.toFile().exists())
+			{
+				throw new IllegalArgumentException("File path [IOS_APP_IPA_PATH] is invalid => " + appPath);
+			}
+			
 			if (!path.getParent().isAbsolute())
 			{
 				iOSCapabilities.setCapability(MobileCapabilityType.APP, path.normalize().toAbsolutePath().toString());
@@ -171,9 +181,14 @@ public class DesiredCapabilityBuilder
 			{
 				throw new IllegalArgumentException("Variable [IOS_APP_PATH] is not provided.");
 			}
-
+			
 			// Set App path
 			Path path = FileSystems.getDefault().getPath(appPath);
+			if(!path.toFile().exists())
+			{
+				throw new IllegalArgumentException("File path [IOS_APP_PATH] is invalid => " + appPath);
+			}
+			
 			if (!path.isAbsolute())
 			{
 				iOSCapabilities.setCapability(MobileCapabilityType.APP, path.normalize().toAbsolutePath().toString());
