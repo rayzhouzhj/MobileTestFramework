@@ -99,34 +99,23 @@ public class TestExecutor
 	}
 	
 	/**
-	 * @param packages Package list, separate by comma, e.g. com.test.package1, com.test.package2
+	 * @param packages Package list
 	 * @param tests test classes
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean runTests(String packages, List<String> tests) throws Exception 
+	public boolean runTests(List<String> packages) throws Exception 
 	{
 		FigletWriter.print(RunTimeContext.getInstance().getProperty("RUNNER"));
-		return startTestExecution(packages, tests);
+		return startTestExecution(packages);
 	}
 
 	/**
-	 * @param packages Package list, separate by comma, e.g. com.test.package1, com.test.package2
+	 * @param packages Package list
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean runTests(String packages) throws Exception 
-	{
-		return runTests(packages, new ArrayList<String>());
-	}
-
-	/**
-	 * @param packages Package list, separate by comma, e.g. com.test.package1, com.test.package2
-	 * @param tests test classes
-	 * @return
-	 * @throws Exception
-	 */
-	private boolean startTestExecution(String packages, List<String> tests) throws Exception 
+	private boolean startTestExecution(List<String> packages) throws Exception 
 	{
 		RunTimeContext.getInstance().setPackages(packages);
 		// Check available devices
@@ -151,17 +140,17 @@ public class TestExecutor
 		boolean hasFailures = false;
 		if (RunTimeContext.getInstance().getProperty("FRAMEWORK").equalsIgnoreCase("testng")) 
 		{
-			TestNGExecutor testNGExecutor = new TestNGExecutor();
+			TestNGExecutor testNGExecutor = new TestNGExecutor(packages);
 			
 			// For parallel test
 			if (RunTimeContext.getInstance().isParallelExecution()) 
 			{
-				hasFailures = testNGExecutor.startTestExecution(tests, packages, ExecutionType.PARALLEL);
+				hasFailures = testNGExecutor.startTestExecution(ExecutionType.PARALLEL);
 			}
 			// For distribute test
 			else
 			{
-				hasFailures = testNGExecutor.startTestExecution(tests, packages, ExecutionType.DISTRIBUTE);
+				hasFailures = testNGExecutor.startTestExecution(ExecutionType.DISTRIBUTE);
 			}
 		}
 

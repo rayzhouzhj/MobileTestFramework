@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,9 +34,9 @@ public class RunTimeContext
 		return instance;
 	}
 	
-	public void setPackages(String packages)
+	public void setPackages(List<String> packages)
 	{
-		Collections.addAll(this.packages, packages.split("\\s*,\\s*"));
+		this.packages = packages;
 	}
 	
 	public List<String> getTestcasePackages()

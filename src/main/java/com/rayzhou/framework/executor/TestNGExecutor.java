@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +16,7 @@ import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ConfigurationBuilder;
 import org.testng.TestNG;
+import org.testng.annotations.Test;
 import org.testng.xml.XmlClass;
 import org.testng.xml.XmlSuite;
 import org.testng.xml.XmlSuite.ParallelMode;
@@ -28,33 +28,52 @@ import com.rayzhou.framework.utils.FigletWriter;
 
 public class TestNGExecutor 
 {
+	private final RunTimeContext context;
+	private List<String> packages;
 	private List<String> suiteFiles = new ArrayList<>();
-	private ArrayList<String> packages = new ArrayList<String>();
-
-	public TestNGExecutor()
+	private List<String> groupsInclude = new ArrayList<>();
+	private List<String> groupsExclude = new ArrayList<>();
+	
+	public TestNGExecutor(List<String> packages)
 	{
+		this.context = RunTimeContext.getInstance();
+		this.packages = packages;
+		
+		initGroups();
 	}
 
 	/**
-	 * 
-	 * @param test test classes
-	 * @param pack Package list, separate by comma, e.g. com.test.package1, com.test.package2
+	 * Initialize testing groups: include groups and exclude groups
+	 */
+	private void initGroups() 
+	{
+		if (context.getProperty("INCLUDE_GROUPS") != null) 
+		{
+			Collections.addAll(groupsInclude, context.getProperty("INCLUDE_GROUPS").split("\\s*,\\s*"));
+		} 
+
+		if (context.getProperty("EXCLUDE_GROUPS") != null) 
+		{
+			Collections.addAll(groupsExclude, context.getProperty("EXCLUDE_GROUPS").split("\\s*,\\s*"));
+		} 
+	}
+
+	/**
+	 * Start Test Execution
 	 * @param executionType Parallel or distribute
 	 * @return
 	 * @throws Exception
 	 */
-	protected boolean startTestExecution(List<String> test, String pack, ExecutionType executionType) throws Exception 
+	protected boolean startTestExecution(ExecutionType executionType) throws Exception 
 	{
 		URL testClassUrl = null;
 		List<URL> testClassUrls = new ArrayList<>();
 		String testClassPackagePath ="file:" + System.getProperty("user.dir") + File.separator + "target" + File.separator + "test-classes" + File.separator;
-		// Add test packages to item list
-		Collections.addAll(packages, pack.split("\\s*,\\s*"));
 
 		// Add URL for each test package
-		for (int i = 0; i < packages.size(); i++) 
+		for (int i = 0; i < this.packages.size(); i++) 
 		{
-			testClassUrl = new URL(testClassPackagePath + packages.get(i).replaceAll("\\.", "/"));
+			testClassUrl = new URL(testClassPackagePath + this.packages.get(i).replaceAll("\\.", "/"));
 			testClassUrls.add(testClassUrl);
 		}
 
@@ -62,20 +81,20 @@ public class TestNGExecutor
 		Reflections reflections = new Reflections(new ConfigurationBuilder().setUrls(testClassUrls).setScanners(new MethodAnnotationsScanner()));
 		Set<Method> resources = reflections.getMethodsAnnotatedWith(org.testng.annotations.Test.class);
 
-		Map<String, List<Method>> methods = createTestsMap(resources);
+		Map<String, List<Method>> classMethodMap = createTestsMap(resources);
 
 		boolean hasFailure;
 		// For distribute test
 		if (executionType == ExecutionType.DISTRIBUTE) 
 		{
-			constructXmlSuiteForDeviceSetup(methods);
-			constructXmlSuiteForDistribution(pack, test, methods);
+			constructXmlSuiteForDeviceSetup(classMethodMap);
+			constructXmlSuiteForDistribution(classMethodMap);
 			hasFailure = triggerTestNGTest();
 		}
 		// For parallel test
 		else 
 		{
-			constructXmlSuiteForParallel(pack, test, methods);
+			constructXmlSuiteForParallel(classMethodMap);
 			hasFailure = triggerTestNGTest();
 		}
 
@@ -85,16 +104,25 @@ public class TestNGExecutor
 		return hasFailure;
 	}
 
+	/**
+	 * Trigger TestNG Test
+	 * @return test result
+	 */
 	private boolean triggerTestNGTest() 
 	{
 		TestNG testNG = new TestNG();
-		testNG.setTestSuites(suiteFiles);
+		testNG.setTestSuites(this.suiteFiles);
 		testNG.run();
 
 		return testNG.hasFailure();
 	}
 
-	private XmlSuite constructXmlSuiteForDeviceSetup(Map<String, List<Method>> methods) 
+	/**
+	 * Construct TestNG XML for device setup
+	 * @param classMethodMap Class and Methods Map
+	 * @return XML suite
+	 */
+	private XmlSuite constructXmlSuiteForDeviceSetup(Map<String, List<Method>> classMethodMap) 
 	{
 		List<String> testcases = new ArrayList<>();
 		String className = RunTimeContext.getInstance().getProperty("APP_SETUP");
@@ -130,27 +158,26 @@ public class TestNGExecutor
 			test.addParameter("device", udid);
 
 			// Add test class and methods
-			test.setXmlClasses(getXmlClasses(testcases, methods));
+			test.setXmlClasses(createXmlClasses(testcases, classMethodMap));
 		}
 
 		System.out.println(suite.toXml());
 		writeTestNGFile(suite, "setupsuite");
 
 		// Remove setup class from test suite
-		methods.remove(className);
+		classMethodMap.remove(className);
 
 		return suite;
 	}
 
-	private XmlSuite constructXmlSuiteForParallel(String pack, List<String> testcases, Map<String, List<Method>> methods) 
+	/**
+	 * Construct XML for Parallel test
+	 * @param classMethodMap Map for Class and Methods
+	 * @return XML suite
+	 */
+	private XmlSuite constructXmlSuiteForParallel(Map<String, List<Method>> classMethodMap) 
 	{
 		Set<String> deviceUDIDs = DeviceAllocationManager.getInstance().getDeviceUDIDs();
-
-		// Add groups
-		ArrayList<String> groupsInclude = new ArrayList<>(
-				Arrays.asList(RunTimeContext.getInstance().getProperty("INCLUDE_GROUPS", "").split("\\s*,\\s*")));
-		ArrayList<String> groupsExclude = new ArrayList<>(
-				Arrays.asList(RunTimeContext.getInstance().getProperty("EXCLUDE_GROUPS", "").split("\\s*,\\s*")));
 
 		// Initialize XML Suite
 		XmlSuite suite = new XmlSuite();
@@ -178,11 +205,11 @@ public class TestNGExecutor
 			test.setName("Mobile Test - " + udid);
 			test.setPreserveOrder(false);
 			test.addParameter("device", udid);
-			test.setIncludedGroups(groupsInclude);
-			test.setExcludedGroups(groupsExclude);
+			test.setIncludedGroups(this.groupsInclude);
+			test.setExcludedGroups(this.groupsExclude);
 
 			// Add test class and methods
-			test.setXmlClasses(getXmlClasses(testcases, methods));
+			test.setXmlClasses(createXmlClasses(null, classMethodMap));
 		}
 
 		System.out.println(suite.toXml());
@@ -191,15 +218,14 @@ public class TestNGExecutor
 		return suite;
 	}
 
-	private XmlSuite constructXmlSuiteForDistribution(String pack, List<String> testcases, Map<String, List<Method>> methods) 
+	/**
+	 * Construct XML for Distribution test
+	 * @param classMethodMap Map for Class and Methods
+	 * @return
+	 */
+	private XmlSuite constructXmlSuiteForDistribution(Map<String, List<Method>> classMethodMap) 
 	{
 		Set<String> deviceUDIDs = DeviceAllocationManager.getInstance().getDeviceUDIDs();
-
-		// Add groups
-		ArrayList<String> groupsInclude = new ArrayList<>(
-				Arrays.asList(RunTimeContext.getInstance().getProperty("INCLUDE_GROUPS", "").split("\\s*,\\s*")));
-		ArrayList<String> groupsExclude = new ArrayList<>(
-				Arrays.asList(RunTimeContext.getInstance().getProperty("EXCLUDE_GROUPS", "").split("\\s*,\\s*")));
 
 		// Initialize XML Suite
 		XmlSuite suite = new XmlSuite();
@@ -226,11 +252,11 @@ public class TestNGExecutor
 		test.setName("Mobile Test");
 		// Device is not associate to specific test or class
 		test.addParameter("device", "");
-		test.setIncludedGroups(groupsInclude);
-		test.setExcludedGroups(groupsExclude);
+		test.setIncludedGroups(this.groupsInclude);
+		test.setExcludedGroups(this.groupsExclude);
 
 		// Add test class and methods
-		test.setXmlClasses(getXmlClasses(testcases, methods));
+		test.setXmlClasses(createXmlClasses(null, classMethodMap));
 
 		System.out.println(suite.toXml());
 		writeTestNGFile(suite, "testsuite");
@@ -238,15 +264,21 @@ public class TestNGExecutor
 		return suite;
 	}
 
-	private List<XmlClass> getXmlClasses(List<String> testcases, Map<String, List<Method>> methods) 
+	/**
+	 * Create XML classes base on testcases and class methods
+	 * @param testcases
+	 * @param classMethodMap Map for Class and Methods
+	 * @return
+	 */
+	private List<XmlClass> createXmlClasses(List<String> testcases, Map<String, List<Method>> classMethodMap) 
 	{
 		List<XmlClass> xmlClassList = new ArrayList<>();
 
-		for (String className : methods.keySet()) 
+		for (String className : classMethodMap.keySet()) 
 		{
 			if (className.contains("Test")) 
 			{
-				if (testcases.size() == 0) 
+				if (testcases != null && testcases.size() == 0) 
 				{
 					XmlClass clazz = new XmlClass();
 					clazz.setName(className);
@@ -256,9 +288,9 @@ public class TestNGExecutor
 				{
 					for (String testCase : testcases) 
 					{
-						for (int index = 0; index < packages.size(); index++)
+						for (int index = 0; index < this.packages.size(); index++)
 						{
-							String testName = packages.get(index).concat("." + testCase).toString();
+							String testName = this.packages.get(index).concat("." + testCase).toString();
 							if (testName.equals(className)) 
 							{
 								XmlClass clazz = new XmlClass();
@@ -268,13 +300,17 @@ public class TestNGExecutor
 						}
 					}
 				}
-
 			}
 		}
 
 		return xmlClassList;
 	}
 
+	/**
+	 * Write suite to xml
+	 * @param suite
+	 * @param fileName
+	 */
 	private void writeTestNGFile(XmlSuite suite, String fileName)
 	{
 		try 
@@ -293,23 +329,86 @@ public class TestNGExecutor
 		}
 	}
 
+	/**
+	 * Create TestNG class to methods mapping
+	 * @param methods
+	 * @return
+	 */
 	private Map<String, List<Method>> createTestsMap(Set<Method> methods) 
 	{
+		StackTraceElement[] stElements = Thread.currentThread().getStackTrace();
+		final String runnerClass = stElements[3].getClassName();
+		System.out.println("TestExecutor: Runner Class => " + runnerClass);
 		Map<String, List<Method>> testsMap = new HashMap<>();
 		methods.stream().forEach(method -> 
 		{
+			String className = method.getDeclaringClass().getPackage().getName() + "." + method.getDeclaringClass().getSimpleName();
+
+			// Skip runner class
+			if(runnerClass.equals(className))
+			{
+				return;
+			}
+
 			// Get method list from specific test class
-			List<Method> methodsList = testsMap.get(method.getDeclaringClass().getPackage().getName() + "." + method.getDeclaringClass().getSimpleName());
+			List<Method> methodsList = testsMap.get(className);
 
 			// If the method list is empty, initialize it and add it to test class map
 			if (methodsList == null)
 			{
 				methodsList = new ArrayList<>();
-				testsMap.put(method.getDeclaringClass().getPackage().getName() + "." + method.getDeclaringClass().getSimpleName(), methodsList);
+				testsMap.put(className, methodsList);
 			}
 
-			// Add method to list
-			methodsList.add(method);
+			// If current method is duplicated
+			if(methodsList.contains(method))
+			{
+				return;
+			}
+
+			// Skip the method with the exclude groups
+			// Added this filter because TestNG sometimes does not filter the exclude correctly
+			if (method.isAnnotationPresent(Test.class))
+			{
+				boolean isIncluded = false;
+				Test test = method.getAnnotation(Test.class);
+				String[] groups = test.groups();
+				for(String group : groups)
+				{
+					if(this.groupsExclude.contains(group))
+					{
+						// If no test method is included for the test class
+						if(methodsList.isEmpty())
+						{
+							// Remove test class from test map
+							testsMap.remove(className);
+						}
+
+						return;
+					}
+
+					// If include groups are not specified or current test group is in the include groups
+					if(this.groupsInclude.size() == 0 || this.groupsInclude.contains(group))
+					{
+						isIncluded = true;
+					}
+				}
+
+				// Add method to list
+				if(isIncluded)
+				{
+					methodsList.add(method);
+				}
+				else
+				{
+					// If no test method is included for the test class
+					if(methodsList.isEmpty())
+					{
+						// Remove test class from test map
+						testsMap.remove(className);
+					}
+				}
+			}
 		});
 
 		return testsMap;
