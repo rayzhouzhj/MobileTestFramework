@@ -157,7 +157,7 @@ public class DeviceAllocationManager
 	 * @param device
 	 * @param testInfo
 	 */
-	public void allocateDeviceAndTask(String device, TestInfo testInfo) 
+	public synchronized void allocateDeviceAndTask(String device, TestInfo testInfo) 
 	{
 		if (device.isEmpty())
 		{

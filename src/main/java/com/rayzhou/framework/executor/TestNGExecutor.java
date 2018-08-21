@@ -126,6 +126,11 @@ public class TestNGExecutor
 	{
 		List<String> testcases = new ArrayList<>();
 		String className = RunTimeContext.getInstance().getProperty("APP_SETUP");
+		// if not Setup is specified
+		if(className == null)
+		{
+			return null;
+		}
 		testcases.add(className.substring(className.lastIndexOf(".") + 1));
 
 		ArrayList<String> listeners = new ArrayList<>();
@@ -278,7 +283,7 @@ public class TestNGExecutor
 		{
 			if (className.contains("Test")) 
 			{
-				if (testcases != null && testcases.size() == 0) 
+				if (testcases == null || testcases.size() == 0) 
 				{
 					XmlClass clazz = new XmlClass();
 					clazz.setName(className);
