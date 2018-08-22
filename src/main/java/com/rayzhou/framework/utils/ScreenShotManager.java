@@ -18,6 +18,12 @@ public class ScreenShotManager
 
     public String captureScreenShot(Status status, String className, String methodName, String deviceModel) 
     {
+    	// If driver is not setup properly
+    	if(TestingDevice.get().getDriver() == null)
+    	{
+    		return "";
+    	}
+    	
         File scrFile = ((TakesScreenshot) TestingDevice.get().getDriver()).getScreenshotAs(OutputType.FILE);
         String screenShotNameWithTimeStamp = RunTimeContext.currentDateAndTime() + "_" + deviceModel.replace(" ", "-");
         
