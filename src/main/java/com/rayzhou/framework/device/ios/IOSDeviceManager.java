@@ -64,7 +64,7 @@ public class IOSDeviceManager
 			// If no real device connected
 			if (iOSDeviceIDs == null || iOSDeviceIDs.isEmpty()) 
 			{
-				if(validDeviceIds.size() > 0)
+				if(iosDeviceMap.size() > 0)
 				{
 					System.out.println("No real IOS device is connected, use simulators for testing.");
 					return iosDeviceMap;
