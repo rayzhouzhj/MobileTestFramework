@@ -13,9 +13,9 @@ Mobile test framework with Selenium + Appium + ExtentReport + TestNG
   - IOS real device
 * Script on device level, which means you can simply use below statement to access the running device info(both android and ios):
 ```
-TestingDevice.get().getDeviceName();
-TestingDevice.get().getOSVersion();
-TestingDevice.get().getDeviceHight();
+TestingDevice.getDeviceName();
+TestingDevice.getOSVersion();
+TestingDevice.getDeviceHight();
 ```
 * ExtentReport and Klov server for better reporting 
 
